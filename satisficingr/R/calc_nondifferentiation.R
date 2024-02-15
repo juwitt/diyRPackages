@@ -73,7 +73,7 @@
 #'
 
 
-calc_nondifferentiation <- function(df, items, new_var_name, proportion_allowed_missings = 0.1) {
+calc_nondifferentiation <- function(df, items = items_list, new_var_name = names_list, proportion_allowed_missings = 0.1) {
 
   if (!requireNamespace("dplyr", quietly = TRUE)) {
     install.packages("dplyr")

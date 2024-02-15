@@ -5,9 +5,9 @@
 \title{Calculation of nondifferentiation over multiple item packages}
 \usage{
 calc_nondifferentiation(
-  df = df,
-  items,
-  new_var_name,
+  df,
+  items = items_list,
+  new_var_name = names_list,
   proportion_allowed_missings = 0.1
 )
 }
