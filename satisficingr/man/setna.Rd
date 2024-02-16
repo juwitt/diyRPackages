@@ -22,12 +22,14 @@ A dataframe will be printed to the console
 Simplification of sjmisc function \code{set_na}, customized for the needs of survey data wrangling
 }
 \examples{
-library(data.table)
-library(dplyr)
-library(sjmisc)
+require(data.table) #generation of example data
+require(dplyr)
+
+#example data
 set.seed(1313)
 df <- data.table(
-  first01 = c(4, -2, 4, 5, 6, 2, -1, -1, -9, 4, 5, 1, 3, 4, 3, 4, 5, -1, -1, 5, 2, 3, 4, 3, 2, 2, -1, -9, 2, 1),
+  first01 = c(4, -2, 4, 5, 6, 2, -1, -1, -9, 4, 5, 1, 3, 4, 3, 4, 5, -1,
+   -1, 5, 2, 3, 4, 3, 2, 2, -1, -9, 2, 1),
   first02 = c(-1, -9, sample(1:5, size = 27, replace = TRUE), -1),
   first03 = c(sample(1:5, size = 30, replace = TRUE)),
   first04 = c(sample(1:5, size = 30, replace = TRUE)),
@@ -54,9 +56,26 @@ df <- data.table(
 
   df[sample(1:30, size = 4), ] <- -10
 
+  #apply function
+  ## First Example (Default)
 
-  df \%>\%
-  mutate(across(all_of(df \%>\% select(contains("first")) \%>\% colnames()), setna)
+  table(df$first01, useNA = "always")
+
+  df2 <- df \%>\%
+  mutate(across(all_of(df \%>\% select(contains("01")) \%>\% colnames()), setna)
+
+  table(df2$first01, useNA = "always")
+
+
+  ## Second Example
+
+  table(df$first01, useNA = "always")
+
+  df3 <- df \%>\% mutate(across(first01, ~setna(.x, miss = "-9")))
+
+  table(df3$first01, useNA = "always")
+
+
 
 }
 \references{
