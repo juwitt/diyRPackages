@@ -126,15 +126,15 @@ calc_nondiff <- function(df, items = items_list, new_var_name = names_list, prop
 
   }
 
-  x <- Sys.time()
+  t1 <- Sys.time()
 
   for (i in seq_along(items)) {
-    starttime <- Sys.time()
+    x <- Sys.time()
     df <- fun_nondiff(df, items[[i]], new_var_name[i], proportion_allowed_missings)
-    print(paste("Duration for", names(items)[i] , ":", Sys.time() - starttime))
+    print(paste("Duration for", names(items)[i] , ":", as.numeric(Sys.time() - x, units = "mins"), "minutes"))
   }
 
-  print(paste("Total duration:", Sys.time()-x))
+  print(paste("Total duration:", as.numeric(Sys.time() - t1, units = "minutes")))
 
   return(df)
 }
