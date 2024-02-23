@@ -18,6 +18,10 @@ As I am currently writing my thesis about Survey Satisficing, I need to build se
 
 ### Satisficing Agents
 
-- calc_nondiff
+- meanRootPairs
     - calculates the mean root of pairs for item packages as a proxy for nondifferentiation, based on explanations of Kim et al., 2019
+    - adjustments: 
+        - function calculates sqrt of sum of all differences (not: sum of sqrts of all differences)
+        - standardization by theoretical(!) min (= 0) and max (= 1) (not: observed min/max)
+
 
