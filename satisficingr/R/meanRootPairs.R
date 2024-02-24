@@ -8,11 +8,11 @@
 #'
 #'
 #' @description
-#' Function calculates the mean of square root differences of all pairs of values in an item package per person (temp_index). Their theoretical range is 0-1, depending on the given data the observed maximum can be lower than 1. For this temp_index, a 0 represents absolute nondiffentiation, meaning that all obsverved values are equal. The temporary indices are standardized then, which means that they are extended to a range of 0-1. For the final_index, 0 means zero nondifferentiation whereas 1 represents the dataset's maximum of nondifferentiation. The procedure is based on the description of Kim et al., 2019, some adjustments were made. The function is applicable to a list of several item packages. The item packs should be named in the following form: scalename.items. The function automatically sets the value of a respondent NA if more than 10% of the items' values are < 0. The proportion is adjustable. The function does not have an explicite rule included for dealing with NAs, yet. I recommend to set NA's < 0. Takes a good while due to included for-loop. Prints durations per item package to the console.
+#' Function calculates the mean of square root differences of all pairs of values in an item package per person (temp_index). Their theoretical range is 0-1, depending on the given data the observed maximum can be lower than 1. For this temp_index, a 0 represents absolute nondiffentiation, meaning that all obsverved values are equal. The temporary indices are standardized then, which means that they are extended to a range of 0-1. For the final_index, 0 means zero nondifferentiation whereas 1 represents the dataset's maximum of nondifferentiation. The procedure is based on the description of Kim et al., 2019, some adjustments were made. The function is applicable to a list of several item packages. The item packs should be named in the following form: scalename.items. The function automatically sets the value of a respondent NA if more than 10% of the items' values are < 0. The proportion is adjustable. The function does not have an explicite rule included for dealing with NAs, yet. I recommend to set NA's < 0. Takes a good while due to included for-loop. Prints durations per item package to the console. For acceleration of the computation, all columns of interest are made numerics before the calculation starts (i.e. unlabelled).
 #'
 #'
 #'
-#' @return A dataframe will be printed to the console
+#' @return A dataframe will be printed to the console. Durations per item package as well as the total duration will be printed to the console.
 #' @export
 #'
 #' @author Julia Witton
@@ -88,7 +88,16 @@ meanRootPairs <- function(df, items, missings.threshold = 0.10) {
     }
     library(dplyr)
 
-    item_name <- strsplit(items, "\\.")[[1]][1]
+
+    # in case data is labelled, the transormation to numeric saves a lot of time
+    vector_list <- items
+    all_item_names <- unlist(vector_list)
+    df <-
+      df %>% mutate_at(vars(colnames(df)[colnames(df) %in% all_item_names]), as.numeric)
+
+    # get the name of the itempackage: first element of the vector in the list (only strings, no numbers)
+    item_name <- gsub("\\d", "", items[[1]][1])
+
     temp_index_name <- paste0("temp_index_", item_name)
     final_index_name <- paste0("final_index_", item_name)
 
@@ -98,15 +107,24 @@ meanRootPairs <- function(df, items, missings.threshold = 0.10) {
       mutate(
         !!temp_index_name := case_when(
 
+          # if proportion of missings in data is higher than threshold - set NA
           (sum(c_across(all_of(items)) < 0) / length(c_across(all_of(items)))) > missings.threshold ~ NA,
 
+          # if not...
           TRUE ~ {
+
+            # take all positive values in the item package of the observation
             positive_items <- c_across(all_of(items))[c_across(all_of(items)) >= 0]
 
+            # if there are at least 2 values (1 pair), we can calculate at least 1 difference
             if (length(positive_items) >= 2) {
+
+              # calculate the sqrt of the sum of all differences. Divide this then by number of differences (pairs) to calculate the mean.
               sqrt(sum(abs(combn(positive_items, 2, diff)))) / choose(length(positive_items), 2)
 
+              # in case there are no pairs
             } else {
+              # set temp_index for this obs. NA
               NA
             }
 
@@ -114,7 +132,10 @@ meanRootPairs <- function(df, items, missings.threshold = 0.10) {
 
         ),
 
+        # calculate the final index if there is a temporary index by...
         !!final_index_name := case_when(is.na(.data[[temp_index_name]]) ~ NA,
+
+                                        # standardization using the thereoretical maximum and minimum of temp_index
                                         TRUE ~ (.data[[temp_index_name]] - 1) / (0 - 1))
 
       )
@@ -125,11 +146,17 @@ meanRootPairs <- function(df, items, missings.threshold = 0.10) {
 
   for (i in seq_along(items)){
     x <- Sys.time()
+
+    # apply the function to all elements of the given list
     df <- fun_meanRootPairs(df, items[[i]], missings.threshold )
-    print(paste("Duration for", names(items)[i], ":", time_length(interval(x, Sys.time()), "minute"), "minutes"))
+
+    # send an information about the duration of the process to the console
+    itempack_name <- gsub("\\d", "", items[[i]][1])  # Remove numbers from the name
+    cat("Duration for", itempack_name, ":", time_length(interval(x, Sys.time()), "minute"), "minutes\n")
+
   }
 
-  print(paste("Total duration for all item packs:", time_length(interval(t1, Sys.time()), "minute"), "minutes"))
+  cat("All done!\nTotal duration for all item packs:", time_length(interval(t1, Sys.time()), "minute"), "minutes.")
 
   return(df)
 }
