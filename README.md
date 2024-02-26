@@ -23,5 +23,8 @@ As I am currently writing my thesis about Survey Satisficing, I need to build se
     - adjustments: 
         - function calculates sqrt of sum of all differences (not: sum of sqrts of all differences)
         - standardization by theoretical(!) min (= 0) and max (= 1) (not: observed min/max)
+     
+### Download
+`remotes::install_github('juwitt/diyRPackages/satisficingr')`
 
 
